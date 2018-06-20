@@ -1,7 +1,10 @@
 # opensc_luks
 ## How to use a PKCS#15-compliant smartcard to unlock a LUKS encrypted /root
 This has been tested on Ubuntu 18.04 LTS with a smartcard and a generic USB smartcard reader. The Ubuntu instance has an unencrypted /boot partition and an encrypted /root partition. Essential info for unlocking the partition was found here: https://blog.g3rt.nl/luks-smartcard-or-token.html. After many VM restarts I was able to put together the patches for the initramfs hook and script and am successfully using this on several laptops.
-It's an upgrade of https://github.com/ramann/smartcard-luks/ script.
+
+For smartcard, i'm inspired of the great works of https://github.com/ramann/smartcard-luks/.
+For USBKey, i'm inspired of the great works of https://www.oxygenimpaired.com/debian-lenny-luks-encrypted-root-hidden-usb-keyfile.1
+
 
 ### The general steps:
 * Erase and initialize card
