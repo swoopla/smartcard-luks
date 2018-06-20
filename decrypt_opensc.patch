@@ -1,0 +1,69 @@
+11a12,14
+> TRIES=5
+> USB_KEY='/dev/usbkey2'
+> 
+26c29
+<         while [ $cardfound = 0 -a $tries -lt 60 ] ; do
+---
+>         while [ $cardfound = 0 -a $tries -lt $TRIES ] ; do
+33c36,60
+<             exit 1
+---
+>             return 1
+>         fi
+>     else
+> 	    return 0
+>     fi
+> }
+> 
+> check_usbkey () {
+> 	usbkeyfound=0
+> 	[ -b $USB_KEY ] && usbkeyfound=1
+> }
+> 
+> wait_usbkey() {
+>     check_usbkey
+>     if [ $cardfound = 0 ] ; then
+>         echo "Waiting for USB Key..." >&2
+>         tries=0
+>         while [ $usbkeyfound = 0 -a $tries -lt $TRIES ] ; do
+>             sleep 1
+>             check_usbkey
+>             tries=$(($tries + 1))
+>         done
+>         if [ $cardusbkey = 0 ] ; then
+>             echo 'Failed to find USB Key !' >&2
+>             return 1
+34a62,63
+>     else
+>             return 0
+38,44c67,70
+< wait_card
+< if [ -x /bin/plymouth ] && plymouth --ping; then
+< 	# Get pin number from plymouth
+< 	/usr/bin/pkcs15-crypt --decipher --input $1 --pkcs1 --raw --pin "$(plymouth ask-for-password --prompt "Enter pin for $crypttarget ($cryptsource): ")"
+< else
+< 	# Get pin number from console
+< 	/usr/bin/pkcs15-crypt --decipher --input $1 --pkcs1 --raw < /dev/console 2>/dev/console
+---
+> OPENED=false
+> if check_usbkey; then
+> 	dd if=$USB_KEY bs=512 skip=4 count=8 |cat
+> 	OPENED=true
+45a72,87
+> 
+> if ! $OPENED && [ -x /bin/plymouth ] && plymouth --ping; then
+> 	if wait_card; then
+> 		# Get pin number from plymouth
+> 		/usr/bin/pkcs15-crypt --decipher --input $1 --pkcs1 --raw --pin "$(plymouth ask-for-password --prompt "Enter pin for $crypttarget ($cryptsource): ")"
+> 		if [ $? -eq 0 ]; then
+> 	      		OPENED=true
+> 		fi
+> 	fi
+> 
+> 	if ! $OPENED; then
+> 	  echo "FAILED to decipher wicth smartcard..." >&2
+> 	  plymouth ask-for-password --prompt "Try LUKS password: "
+> 	fi
+> fi
+> 
