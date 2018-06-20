@@ -61,10 +61,34 @@ For USBKey, i'm inspired of the great works of https://www.oxygenimpaired.com/de
     
     ```sda2_crypt UUID=d332ecc5-ce8b-4900-a04a-a79abd029d6d /root/rootkey.enc luks,keyscript=decrypt_opensc```
 
-9. Apply patch to cryptopensc hook and regenerate initramfs
+9. Plug USB Key and Extract 4096 bits of random data off the usb stick that will become the new keyfile from in between
+
+    ```dd if=/dev/sdx of=/root/luks-secret.key bs=512 skip=4 count=8```
+
+10. Add the key to your LUKS encrypted partition in new key slot. You’ll be prompted for you current password when running this.
+
+    ```cryptsetup luksAddKey /dev/sda2 /root/luks-secret.key```
+
+    Your usb stick is now ready to go.
+
+11. If you don’t want to keep a backup copy of this key on your filesystem then use shred.
+
+    ```shred --remove --zero /root/luks-secret.key```
+
+12. Do actions in "Creating a udev rule" of https://www.oxygenimpaired.com/debian-lenny-luks-encrypted-root-hidden-usb-keyfile.
+
+    You MUST use most specific informations about your USB Key and you must apply 0600 on file /etc/udev/rules.d/99-unlock-lukcs.rules
+
+13. Apply patch to cryptopensc hook and regenerate initramfs
 
     ```sudo patch /lib/cryptsetup/script/decrypt_cryptopensc < decrypt_opensc.patch ```
 
     ```sudo patch /etc/initramfs-tools/modules < etc_initramfs-tools_modules.patch ```
     
     ```sudo update-initramfs -u```
+
+14. Test with USB Key
+
+15. Test smartcard (without USB Key)
+
+16. Test LUKS Password (without USB KEY and Smartcard)
