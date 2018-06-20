@@ -63,6 +63,8 @@ For USBKey, i'm inspired of the great works of https://www.oxygenimpaired.com/de
 
 9. Apply patch to cryptopensc hook and regenerate initramfs
 
-    ```sudo patch /lib/cryptsetup/script/decryp_cryptopensc < decrypy_opensc.patch ```
+    ```sudo patch /lib/cryptsetup/script/decrypt_cryptopensc < decrypt_opensc.patch ```
+
+    ```sudo patch /etc/initramfs-tools/modules < etc_initramfs-tools_modules.patch ```
     
     ```sudo update-initramfs -u```
